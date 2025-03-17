@@ -3,7 +3,6 @@ pipeline {
 
     parameters {
         string(name: 'ENV_NAME', defaultValue: 'dev', description: 'Environment name')
-        password(name: 'MYSQL_PASSWORD', defaultValue: '0slo1$$', description: 'MySQL root password')
         string(name: 'MYSQL_PORT', defaultValue: '3306', description: 'MySQL port')
     }
 
@@ -34,14 +33,17 @@ pipeline {
                     // Remove the existing container if it exists
                     bat "docker rm -f mysql-${params.ENV_NAME} || true"
 
-                    // Run a new container
-                    bat """
-                        docker run -d \
-                        --name mysql-${params.ENV_NAME} \
-                        -e MYSQL_ROOT_PASSWORD=${params.MYSQL_PASSWORD} \
-                        -p ${params.MYSQL_PORT}:3306 \
-                        mysql-${params.ENV_NAME}
-                    """
+                    // Use the secure credential for the MySQL root password
+                    withCredentials([string(credentialsId: 'mysql-root-password', variable: 'MYSQL_ROOT_PASSWORD')]) {
+                        // Run a new container
+                        bat """
+                            docker run -d \
+                            --name mysql-${params.ENV_NAME} \
+                            -e MYSQL_ROOT_PASSWORD=%MYSQL_ROOT_PASSWORD% \
+                            -p ${params.MYSQL_PORT}:3306 \
+                            mysql-${params.ENV_NAME}
+                        """
+                    }
                 }
             }
         }
@@ -52,18 +54,21 @@ pipeline {
                     // Wait for MySQL to be ready (60 seconds)
                     bat "ping 127.0.0.1 -n 61 > nul"
 
-                    // Create the database and table
-                    bat """
-                        docker exec mysql-${params.ENV_NAME} mysql -uroot -p${params.MYSQL_PASSWORD} -e "
-                            CREATE DATABASE DEVAPP;
-                            USE DEVAPP;
-                            CREATE TABLE departments (
-                                DEPT INT(4) PRIMARY KEY,
-                                DEPT_NAME VARCHAR(250)
-                            );
-                            INSERT INTO departments (DEPT, DEPT_NAME) VALUES (1001, 'Sales'), (1002, 'Engineering');
-                        "
-                    """
+                    // Use the secure credential for the MySQL root password
+                    withCredentials([string(credentialsId: 'mysql-root-password', variable: 'MYSQL_ROOT_PASSWORD')]) {
+                        // Create the database and table
+                        bat """
+                            docker exec mysql-${params.ENV_NAME} mysql -uroot -p%MYSQL_ROOT_PASSWORD% -e "
+                                CREATE DATABASE DEVAPP;
+                                USE DEVAPP;
+                                CREATE TABLE departments (
+                                    DEPT INT(4) PRIMARY KEY,
+                                    DEPT_NAME VARCHAR(250)
+                                );
+                                INSERT INTO departments (DEPT, DEPT_NAME) VALUES (1001, 'Sales'), (1002, 'Engineering');
+                            "
+                        """
+                    }
                 }
             }
         }
