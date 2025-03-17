@@ -48,8 +48,8 @@ pipeline {
         stage('Configurar Banco de Dados') {
             steps {
                 script {
-                    // Aguarda o MySQL estar pronto (30 segundos)
-                    bat "ping 127.0.0.1 -n 31 > nul"
+                    // Aguarda o MySQL estar pronto (60 segundos)
+                    bat "ping 127.0.0.1 -n 61 > nul"
 
                     // Cria o banco de dados e a tabela
                     bat """
