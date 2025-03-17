@@ -3,7 +3,7 @@ pipeline {
 
     parameters {
         string(name: 'ENV_NAME', defaultValue: 'dev', description: 'Nome do ambiente')
-        password(name: 'MYSQL_PASSWORD', defaultValue: '', description: 'Senha do MySQL')
+        password(name: 'MYSQL_PASSWORD', defaultValue: '0slo1$$', description: 'Senha do MySQL')
         string(name: 'MYSQL_PORT', defaultValue: '3306', description: 'Porta do MySQL')
     }
 
