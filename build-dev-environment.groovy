@@ -58,15 +58,7 @@ pipeline {
                     withCredentials([string(credentialsId: 'mysql-root-password', variable: 'MYSQL_ROOT_PASSWORD')]) {
                         // Create the database and table
                         bat """
-                            docker exec mysql-${params.ENV_NAME} mysql -uroot -p%MYSQL_ROOT_PASSWORD% -e "
-                                CREATE DATABASE DEVAPP;
-                                USE DEVAPP;
-                                CREATE TABLE departments (
-                                    DEPT INT(4) PRIMARY KEY,
-                                    DEPT_NAME VARCHAR(250)
-                                );
-                                INSERT INTO departments (DEPT, DEPT_NAME) VALUES (1001, 'Sales'), (1002, 'Engineering');
-                            "
+                            docker exec mysql-${params.ENV_NAME} mysql -uroot -p%MYSQL_ROOT_PASSWORD% -e "CREATE DATABASE DEVAPP; USE DEVAPP; CREATE TABLE departments (DEPT INT(4) PRIMARY KEY, DEPT_NAME VARCHAR(250)); INSERT INTO departments (DEPT, DEPT_NAME) VALUES (1001, 'Sales'), (1002, 'Engineering');"
                         """
                     }
                 }
