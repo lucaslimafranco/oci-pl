@@ -2,38 +2,39 @@ pipeline {
     agent any
 
     parameters {
-        string(name: 'ENV_NAME', defaultValue: 'dev', description: 'Nome do ambiente')
-        password(name: 'MYSQL_PASSWORD', defaultValue: '0slo1$$', description: 'Senha do MySQL')
-        string(name: 'MYSQL_PORT', defaultValue: '3306', description: 'Porta do MySQL')
+        string(name: 'ENV_NAME', defaultValue: 'dev', description: 'Environment name')
+        password(name: 'MYSQL_PASSWORD', defaultValue: '0slo1$$', description: 'MySQL root password')
+        string(name: 'MYSQL_PORT', defaultValue: '3306', description: 'MySQL port')
     }
 
     stages {
-        stage('Validar Parâmetros') {
+        stage('Validate Parameters') {
             steps {
                 script {
-                    // Valida se a porta é um número válido
+                    // Validate if the port is a valid number within the range
                     if (!params.MYSQL_PORT.isNumber() || params.MYSQL_PORT.toInteger() < 1 || params.MYSQL_PORT.toInteger() > 65535) {
-                        error("Porta inválida. Deve ser um número entre 1 e 65535.")
+                        error("Invalid port. Must be a number between 1 and 65535.")
                     }
                 }
             }
         }
 
-        stage('Construir Imagem Docker') {
+        stage('Build Docker Image') {
             steps {
                 script {
+                    // Build the Docker image
                     bat "docker build -t mysql-${params.ENV_NAME} ."
                 }
             }
         }
 
-        stage('Executar Container') {
+        stage('Run Container') {
             steps {
                 script {
-                    // Remove o container existente, se houver
+                    // Remove the existing container if it exists
                     bat "docker rm -f mysql-${params.ENV_NAME} || true"
 
-                    // Cria um novo container
+                    // Run a new container
                     bat """
                         docker run -d \
                         --name mysql-${params.ENV_NAME} \
@@ -45,13 +46,13 @@ pipeline {
             }
         }
 
-        stage('Configurar Banco de Dados') {
+        stage('Configure Database') {
             steps {
                 script {
-                    // Aguarda o MySQL estar pronto (60 segundos)
+                    // Wait for MySQL to be ready (60 seconds)
                     bat "ping 127.0.0.1 -n 61 > nul"
 
-                    // Cria o banco de dados e a tabela
+                    // Create the database and table
                     bat """
                         docker exec mysql-${params.ENV_NAME} mysql -uroot -p${params.MYSQL_PASSWORD} -e "
                             CREATE DATABASE DEVAPP;
@@ -70,10 +71,10 @@ pipeline {
 
     post {
         success {
-            echo "Pipeline concluída com sucesso!"
+            echo "Pipeline completed successfully!"
         }
         failure {
-            echo "Pipeline falhou. Verifique os logs para mais detalhes."
+            echo "Pipeline failed. Check the logs for more details."
         }
     }
 }
