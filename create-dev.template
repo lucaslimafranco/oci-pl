@@ -1,0 +1,10 @@
+   CREATE USER 'developer'@'%' IDENTIFIED BY '${MYSQL_PASSWORD}';
+   GRANT ALL PRIVILEGES ON DEVAPP.* TO 'developer'@'%';
+
+   USE DEVAPP;
+   CREATE TABLE IF NOT EXISTS departments (
+       DEPT INT(4),
+       DEPT_NAME VARCHAR(250)
+   );
+
+   INSERT INTO departments (DEPT, DEPT_NAME) VALUES (1001, 'HR'), (1002, 'Engineering');
